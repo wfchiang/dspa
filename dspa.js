@@ -38,8 +38,12 @@ var DSPA = new function () {
         'TYPE': '__type__',
         'CHILDREN':'__children__',
         'LENGTH':'__length__',
-        'RANGE':'__range__'
+        'RANGE':'__range__',
+        'MEMBERSHIP':'__membership__',
+        'REQUIRED':'__required__' // The default value is true
     };
+
+    this.PATH_SEPARATOR = '.';
 
     /**
     Type-check utils
@@ -102,6 +106,22 @@ var DSPA = new function () {
 
     this.isValidationResult = function (r) {
         return (!this.isUndefined(r) && (typeof r === 'object') && (r.constructor === ValidationResult));
+    };
+
+    this.isCollection = function (c, type) {
+        if (!this.isArray(c)) {
+            return false;
+        }
+        if (!this.isString(type)) {
+            return false;
+        }
+        let i = 0;
+        for (i = 0 ; i < c.length ; i++) {
+            if (!this.validateType(c[i], type)) {
+                return false;
+            }
+        }
+        return true;
     };
 
     /**
@@ -180,7 +200,7 @@ var DSPA = new function () {
         }
 
         let currObj = jsonObj;
-        let keys = vpath.split('.');
+        let keys = vpath.split(this.PATH_SEPARATOR);
         let i = 0;
         for (i = 0 ; i < keys.length ; i++) {
             if (this.isJson(currObj)) {
@@ -234,6 +254,17 @@ var DSPA = new function () {
         }
 
         throw new Error("unknown type: " + type);
+    };
+
+    this.validateMembership = function (value, collection, type) {
+        if (!this.validateType(value, type)) {
+            return false;
+        }
+        if (!this.isCollection(collection, type)) {
+            return false;
+        }
+
+        return collection.includes(value);
     };
 
     this.validateValueRange = function(value, valueRange) {
@@ -306,9 +337,21 @@ var DSPA = new function () {
                 let specChildrenKeys = Object.getOwnPropertyNames(childrenSpecs);
                 for (i = 0 ; i < specChildrenKeys.length ; i++) {
                     let childKey = specChildrenKeys[i];
-                    let childValidationResult = this.validateDataWithSpec(data[childKey], childrenSpecs[childKey]);
-                    validationResult.result = (validationResult.result && childValidationResult.result);
-                    validationResult.reasons = validationResult.reasons.concat(childValidationResult.reasons);
+                    let childSpec = childrenSpecs[childKey];
+
+                    if (data.hasOwnProperty(childKey)) {
+                        let childValidationResult = this.validateDataWithSpec(data[childKey], childSpec);
+                        validationResult.result = (validationResult.result && childValidationResult.result);
+                        validationResult.reasons = validationResult.reasons.concat(childValidationResult.reasons);
+                    }
+                    else { // The field is not populated
+                        if (childSpec.hasOwnProperty(this.SPEC_KEY.REQUIRED) && (!childSpec[this.SPEC_KEY.REQUIRED])) { // If it is not required -> that's ok
+                            ;
+                        }
+                        else { // If it is required -> return and error
+                            this.addValidationFail(validationResult, "Missed field " + childKey);
+                        }
+                    }
                 }
             }
             else {

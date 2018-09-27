@@ -1,6 +1,6 @@
 <html>
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="../../tools/jscache/angular.min.js"></script>
     <script src="./dspa.js"></script>
 </head>
 <body>
@@ -23,16 +23,20 @@
             "__children__": {
                 "strKey0": {
                     "__type__":"string",
-                    "__length__":"(0, 100]"
+                    "__length__":"(0, 100]",
+                    "__membership__":["strV0", "strV1"]
                 },
                 "intKey0": {
                     "__type__":"int",
                     "__range__":"(0, 1]"
                 },
                 "floatKey0": {
-                    "__type__":"float"
+                    "__required__":false,
+                    "__type__":"float",
+                    "__range__":"[1.0, 2.0)"
                 },
                 "objKey0": {
+                    "__required__":false,
                     "__type__":"json",
                     "__children__": {
                         "strKey1": {
@@ -103,6 +107,16 @@
                 <td>isJson(accessValue(json0, 'objKey1'))</td>
                 <td>{{ DSPA.isJson(DSPA.accessValue(json0, 'objKey1')) }}</td>
                 <td>false</td>
+            </tr>
+            <tr>
+                <td>DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
+                <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}</td>
+                <td>true</td>
+            </tr>
+            <tr>
+                <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
+                <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}</td>
+                <td>true</td>
             </tr>
             <tr>
                 <td>accessValue(json0, 'objKey0.strKey1')</td>
