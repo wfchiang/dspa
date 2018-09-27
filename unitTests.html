@@ -140,9 +140,8 @@
             </tr>
         </table>
 
-        <p>
-            {{ DSPA.validateDataWithSpec(json0, spec0) }}
-        </p>
+        <h3>Validation Result</h3>
+        <pre>{{ DSPA.printJson(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
     </div>
     <hr/>
 </div>

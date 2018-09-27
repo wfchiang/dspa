@@ -7,6 +7,13 @@ class ValidationResult {
         this.result = true;
         this.reasons = new Array();
     }
+
+    toJSON () {
+        return {
+            "result":this.result,
+            "reasons":this.reasons
+        };
+    }
 }
 
 class ValueRange {
