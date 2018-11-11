@@ -51,13 +51,32 @@
 
         // Utils
         $scope.DSPA = DSPA;
+
+        // Tests
+        $scope.goTest = function () {
+            $scope.predicateTest($scope.testText);
+        };
+
+        $scope.predicateTest = function (predString) {
+            let pred = new Function("rootObj", "return String(rootObj.strKey0);");
+            alert(pred($scope.json0));
+        };
       });
+
 
 </script>
 
 <div
         ng-app="tester"
         ng-controller="testerController">
+
+    <div>
+        <textarea ng-model="testText"></textarea>
+        <button ng-click="goTest()">Go Test</button>
+    </div>
+
+    <hr/>
+
     <!-- test 0 -->
     <div>
         <h3>Json Data and Spec -- json0 -- spec0</h3>
@@ -110,12 +129,17 @@
             </tr>
             <tr>
                 <td>DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
-                <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}</td>
+                <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}
+                </td>
                 <td>true</td>
             </tr>
             <tr>
-                <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
-                <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}</td>
+                <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'),
+                    "string")
+                </td>
+                <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'),
+                    "string") }}
+                </td>
                 <td>true</td>
             </tr>
             <tr>
@@ -143,7 +167,9 @@
         <h3>Validation Result</h3>
         <pre>{{ DSPA.printJson(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
     </div>
+
     <hr/>
+
 </div>
 </body>
 </html>

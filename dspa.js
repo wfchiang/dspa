@@ -47,7 +47,12 @@ var DSPA = new function () {
         'LENGTH':'__length__',
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
-        'REQUIRED':'__required__' // The default value is true
+        'REQUIRED':'__required__', /* The default value is true */
+        'PREDICATES':'__predicates__'
+    };
+
+    this.VAR_NAME = {
+        'ROOT_OBJ':'rootObj'
     };
 
     this.PATH_SEPARATOR = '.';
@@ -131,6 +136,10 @@ var DSPA = new function () {
         return true;
     };
 
+    this.isSafePredicateCode = function (s) {
+        return (this.isString(s));
+    };
+
     /**
     Parsing utils
     */
@@ -193,6 +202,20 @@ var DSPA = new function () {
         }
 
         return valueRange;
+    };
+
+    this.parsePredicate = function (s) {
+        if (this.isString(s)) {
+            if (this.isSafePredicateCode(s)) {
+                return new Function(this.VAR_NAME.ROOT_OBJ, s);
+            }
+            else {
+                throw new Error("Unsafe predicate code");
+            }
+        }
+        else {
+            throw new Error("Unsupported type of s");
+        }
     };
 
     /**
