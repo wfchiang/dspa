@@ -48,11 +48,11 @@ var DSPA = new function () {
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
         'REQUIRED':'__required__', /* The default value is true */
-        'PREDICATES':'__predicates__'
+        'PREDICATE':'__predicate__'
     };
 
     this.VAR_NAME = {
-        'ROOT_OBJ':'rootObj'
+        'SELF':'self'
     };
 
     this.PATH_SEPARATOR = '.';
@@ -207,7 +207,7 @@ var DSPA = new function () {
     this.parsePredicate = function (s) {
         if (this.isString(s)) {
             if (this.isSafePredicateCode(s)) {
-                return new Function(this.VAR_NAME.ROOT_OBJ, s);
+                return new Function(this.VAR_NAME.SELF, s);
             }
             else {
                 throw new Error("Unsafe predicate code");
@@ -388,28 +388,19 @@ var DSPA = new function () {
                 throw new Error("Invalid Spec -- no " + this.SPEC_KEY.CHILDREN + " specified for Json spec");
             }
         }
-        else if (dataType === this.DATA_TYPE.INT) {
+        else if (dataType === this.DATA_TYPE.INT || dataType === this.DATA_TYPE.FLOAT) {
             // Check range
             if (spec.hasOwnProperty(this.SPEC_KEY.RANGE)) {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.RANGE]);
                 if (!this.validateValueRange(data, valueRange)) {
-                    this.addValidationFail(validationResult, "int out of range");
-                }
-            }
-        }
-        else if (dataType === this.DATA_TYPE.FLOAT) {
-            // Check range
-            if (spec.hasOwnProperty(this.SPEC_KEY.RANGE)) {
-                let valueRange = this.parseValueRange(spec[this.SPEC_KEY.RANGE]);
-                if (!this.validateValueRange(data, valueRange)) {
-                    this.addValidationFail(validationResult, "float out of range");
+                    this.addValidationFail(validationResult, " " + dataType + " out of range");
                 }
             }
         }
         else if (dataType === this.DATA_TYPE.ARRAY) {
         }
         else if (dataType ===  this.DATA_TYPE.STRING) {
-            // Check range
+            // Check length 
             if (spec.hasOwnProperty(this.SPEC_KEY.LENGTH)) {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.LENGTH]);
                 if (!this.validateValueRange(data.length, valueRange)) {
@@ -419,6 +410,24 @@ var DSPA = new function () {
         }
         else {
             throw new Error("Uncaught dataType: " + dataType);
+        }
+        
+        // Check predicate 
+        if (spec.hasOwnProperty(this.SPEC_KEY.PREDICATE)) {
+            predicateCode = spec[this.SPEC_KEY.PREDICATE]; 
+            let predicate; 
+            try {
+                predicate = this.parsePredicate(predicateCode); 
+            } catch (ex) {
+                throw new Error("Cannot parse predicate: " + predicateCode); 
+            }
+            try {
+                if (!predicate(data)) {
+                    this.addValidationFail(validationResult, "predicate returns false: " + predicateCode); 
+                }
+            } catch (ex) {
+                throw new Error("Predicate execution failed: " + predicateCode); 
+            }
         }
 
         // Return

@@ -20,6 +20,7 @@
           };
           $scope.spec0 = {
             "__type__":"json",
+            "__predicate__":"return (2.2 <= (self.intKey0 + self.floatKey0));",
             "__children__": {
                 "strKey0": {
                     "__type__":"string",
@@ -33,7 +34,8 @@
                 "floatKey0": {
                     "__required__":false,
                     "__type__":"float",
-                    "__range__":"[1.0, 2.0)"
+                    "__range__":"[1.0, 2.0)",
+                    "__predicate__":"return(1.1 <= self);"
                 },
                 "objKey0": {
                     "__required__":false,
@@ -69,14 +71,6 @@
 <div
         ng-app="tester"
         ng-controller="testerController">
-
-    <div>
-        <textarea ng-model="testText"></textarea>
-        <button ng-click="goTest()">Go Test</button>
-    </div>
-
-    <hr/>
-
     <!-- test 0 -->
     <div>
         <h3>Json Data and Spec -- json0 -- spec0</h3>
