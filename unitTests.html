@@ -19,7 +19,7 @@
             }
           };
           $scope.spec0 = {
-            "__type__":"json",
+            "__type__":"object",
             "__predicate__":"return (2.2 <= (self.intKey0 + self.floatKey0));",
             "__children__": {
                 "strKey0": {
@@ -39,7 +39,7 @@
                 },
                 "objKey0": {
                     "__required__":false,
-                    "__type__":"json",
+                    "__type__":"object",
                     "__children__": {
                         "strKey1": {
                             "__type__":"string",
@@ -81,10 +81,10 @@
             </tr>
             <tr>
                 <td>
-                    <pre>{{ DSPA.printJson(json0, 4) }}</pre>
+                    <pre>{{ DSPA.printObject(json0, 4) }}</pre>
                 </td>
                 <td>
-                    <pre>{{ DSPA.printJson(spec0, 4) }}</pre>
+                    <pre>{{ DSPA.printObject(spec0, 4) }}</pre>
                 </td>
             </tr>
         </table>
@@ -102,8 +102,8 @@
                 <td>false</td>
             </tr>
             <tr>
-                <td>isJson(json0)</td>
-                <td>{{ DSPA.isJson(json0) }}</td>
+                <td>isObject(json0)</td>
+                <td>{{ DSPA.isObject(json0) }}</td>
                 <td>true</td>
             </tr>
             <tr>
@@ -112,13 +112,13 @@
                 <td>true</td>
             </tr>
             <tr>
-                <td>isJson(accessValue(json0, 'objKey0'))</td>
-                <td>{{ DSPA.isJson(DSPA.accessValue(json0, 'objKey0')) }}</td>
+                <td>isObject(accessValue(json0, 'objKey0'))</td>
+                <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey0')) }}</td>
                 <td>true</td>
             </tr>
             <tr>
-                <td>isJson(accessValue(json0, 'objKey1'))</td>
-                <td>{{ DSPA.isJson(DSPA.accessValue(json0, 'objKey1')) }}</td>
+                <td>isObject(accessValue(json0, 'objKey1'))</td>
+                <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey1')) }}</td>
                 <td>false</td>
             </tr>
             <tr>
@@ -159,7 +159,7 @@
         </table>
 
         <h3>Validation Result</h3>
-        <pre>{{ DSPA.printJson(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
+        <pre>{{ DSPA.printObject(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
     </div>
 
     <hr/>

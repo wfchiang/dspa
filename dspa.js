@@ -38,7 +38,7 @@ var DSPA = new function () {
         'FLOAT':'float',
         'STRING':'string',
         'ARRAY':'array',
-        'JSON':'json'
+        'OBJECT':'object'
     };
 
     this.SPEC_KEY = {
@@ -80,7 +80,7 @@ var DSPA = new function () {
         return (!this.isUndefined(a)) && (typeof a === 'object') && (a.constructor === Array);
     };
 
-    this.isJson = function (obj) {
+    this.isObject = function (obj) {
         return (!this.isUndefined(obj)) && (typeof obj === 'object') && (obj.constructor === Object);
     };
 
@@ -106,7 +106,7 @@ var DSPA = new function () {
     };
 
     this.isSpec = function (spec) {
-        if (!this.isJson(spec)) {
+        if (!this.isObject(spec)) {
             return false;
         }
         return true;
@@ -221,19 +221,19 @@ var DSPA = new function () {
     /**
     IO utils
     */
-    this.accessValue = function (jsonObj, vpath) {
-        if (!this.isJson(jsonObj)) {
-            throw new Error("jsonObj is not a Json object");
+    this.accessValue = function (obj, vpath) {
+        if (!this.isObject(obj)) {
+            throw new Error("obj is not an object");
         }
         if (!this.isString(vpath)) {
             throw new Error("vpath is not a string");
         }
 
-        let currObj = jsonObj;
+        let currObj = obj;
         let keys = vpath.split(this.PATH_SEPARATOR);
         let i = 0;
         for (i = 0 ; i < keys.length ; i++) {
-            if (this.isJson(currObj)) {
+            if (this.isObject(currObj)) {
                 if (currObj.hasOwnProperty(keys[i])) {
                     currObj = currObj[keys[i]];
                 }
@@ -249,14 +249,14 @@ var DSPA = new function () {
         return currObj;
     };
 
-    this.printJson = function (jsonObj, lenIndent) {
-        if (!this.isJson(jsonObj)) {
-            throw new Error("jsonObj is not a Json object");
+    this.printObject = function (obj, lenIndent) {
+        if (!this.isObject(obj)) {
+            throw new Error("obj is not an object");
         }
         if (!this.isInt(lenIndent)) {
             throw new Error("lenIndent is not an integer");
         }
-        return JSON.stringify(jsonObj, undefined, lenIndent);
+        return JSON.stringify(obj, undefined, lenIndent);
     };
 
     /**
@@ -279,8 +279,8 @@ var DSPA = new function () {
         if (type === this.DATA_TYPE.ARRAY) {
             return this.isArray(value);
         }
-        if (type === this.DATA_TYPE.JSON) {
-            return this.isJson(value);
+        if (type === this.DATA_TYPE.OBJECT) {
+            return this.isObject(value);
         }
 
         throw new Error("unknown type: " + type);
@@ -350,7 +350,7 @@ var DSPA = new function () {
         }
 
         // Different validation processes based on the data type
-        if (dataType === this.DATA_TYPE.JSON) {
+        if (dataType === this.DATA_TYPE.OBJECT) {
             // Check the children
             if (spec.hasOwnProperty(this.SPEC_KEY.CHILDREN)) {
                 // Check the unknown children in the data
