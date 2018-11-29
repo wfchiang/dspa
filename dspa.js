@@ -44,6 +44,7 @@ var DSPA = new function () {
     this.SPEC_KEY = {
         'TYPE': '__type__',
         'CHILDREN':'__children__',
+        'ITEM':'__item__',
         'LENGTH':'__length__',
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
@@ -398,6 +399,24 @@ var DSPA = new function () {
             }
         }
         else if (dataType === this.DATA_TYPE.ARRAY) {
+            // Check length
+            if (spec.hasOwnProperty(this.SPEC_KEY.LENGTH)) {
+                let valueRange = this.parseValueRange(spec[this.SPEC_KEY.LENGTH]);
+                if (!this.validateValueRange(data.length, valueRange)) {
+                    this.addValidationFail(validationResult, "array-length out of range");
+                }
+            }
+            
+            // Check items 
+            if (spec.hasOwnProperty(this.SPEC_KEY.ITEM)) {
+                let itemSpec = spec[this.SPEC_KEY.ITEM]; 
+                for (let i = 0 ; i < data.length ; i++) {
+                    let item = data[i]; 
+                    let itemValidationResult = this.validateDataWithSpec(item, itemSpec); 
+                    validationResult.result = (validationResult.result && itemValidationResult.result);
+                    validationResult.reasons = validationResult.reasons.concat(itemValidationResult.reasons);
+                }
+            }
         }
         else if (dataType ===  this.DATA_TYPE.STRING) {
             // Check length 

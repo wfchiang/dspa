@@ -1,169 +1,181 @@
 <html>
+
 <head>
     <script src="../../tools/jscache/angular.min.js"></script>
     <script src="./dspa.js"></script>
 </head>
-<body>
-<script>
-      var app = angular.module('tester', []);
 
-      app.controller('testerController', function($scope) {
-        // Init function
-        this.$onInit = function () {
-          $scope.json0 = {
-            "strKey0": "strV0",
-            "intKey0": 1,
-            "floatKey0": 1.1,
-            "objKey0": {
-              "strKey1": "strV1"
-            }
-          };
-          $scope.spec0 = {
-            "__type__":"object",
-            "__predicate__":"return (2.2 <= (self.intKey0 + self.floatKey0));",
-            "__children__": {
-                "strKey0": {
-                    "__type__":"string",
-                    "__length__":"(0, 100]",
-                    "__membership__":["strV0", "strV1"]
-                },
-                "intKey0": {
-                    "__type__":"int",
-                    "__range__":"(0, 1]"
-                },
-                "floatKey0": {
-                    "__required__":false,
-                    "__type__":"float",
-                    "__range__":"[1.0, 2.0)",
-                    "__predicate__":"return(1.1 <= self);"
-                },
-                "objKey0": {
-                    "__required__":false,
-                    "__type__":"object",
+<body>
+    <script>
+        var app = angular.module('tester', []);
+
+        app.controller('testerController', function ($scope) {
+            // Init function
+            this.$onInit = function () {
+                $scope.json0 = {
+                    "arrKey0": [123, 134, 145],
+                    "strKey0": "strV0",
+                    "intKey0": 1,
+                    "floatKey0": 1.1,
+                    "objKey0": {
+                        "strKey1": "strV1"
+                    }
+                };
+                $scope.spec0 = {
+                    "__type__": "object",
+                    "__predicate__": "return (2.1 <= (self.intKey0 + self.floatKey0));",
                     "__children__": {
-                        "strKey1": {
-                            "__type__":"string",
-                            "__length__":5
+                        "arrKey0": {
+                            "__type__": "array",
+                            "__item__": {
+                                "__type__": "int",
+                                "__range__": "[100, 150]"
+                            }
+                        },
+                        "strKey0": {
+                            "__type__": "string",
+                            "__length__": "(0, 100]",
+                            "__membership__": ["strV0", "strV1"]
+                        },
+                        "intKey0": {
+                            "__type__": "int",
+                            "__range__": "(0, 1]"
+                        },
+                        "floatKey0": {
+                            "__required__": false,
+                            "__type__": "float",
+                            "__range__": "[1.0, 2.0)",
+                            "__predicate__": "return(1.1 <= self);"
+                        },
+                        "objKey0": {
+                            "__required__": false,
+                            "__type__": "object",
+                            "__children__": {
+                                "strKey1": {
+                                    "__type__": "string",
+                                    "__length__": 5
+                                }
+                            }
                         }
                     }
-                }
-            }
-          };
-        };
+                };
+            };
 
-        // Utils
-        $scope.DSPA = DSPA;
+            // Utils
+            $scope.DSPA = DSPA;
 
-        // Tests
-        $scope.goTest = function () {
-            $scope.predicateTest($scope.testText);
-        };
+            // Tests
+            $scope.goTest = function () {
+                $scope.predicateTest($scope.testText);
+            };
 
-        $scope.predicateTest = function (predString) {
-            let pred = new Function("rootObj", "return String(rootObj.strKey0);");
-            alert(pred($scope.json0));
-        };
-      });
+            $scope.predicateTest = function (predString) {
+                let pred = new Function("rootObj", "return String(rootObj.strKey0);");
+                alert(pred($scope.json0));
+            };
+        });
 
 
-</script>
+    </script>
 
-<div
-        ng-app="tester"
-        ng-controller="testerController">
-    <!-- test 0 -->
-    <div>
-        <h3>Json Data and Spec -- json0 -- spec0</h3>
-        <table border="1">
-            <tr>
-                <td>Data</td>
-                <td>Spec</td>
-            </tr>
-            <tr>
-                <td>
-                    <pre>{{ DSPA.printObject(json0, 4) }}</pre>
-                </td>
-                <td>
-                    <pre>{{ DSPA.printObject(spec0, 4) }}</pre>
-                </td>
-            </tr>
-        </table>
+    <div ng-app="tester" ng-controller="testerController">
+        <!-- test 0 -->
+        <div>
+            <h3>Json Data and Spec -- json0 -- spec0</h3>
+            <table border="1">
+                <tr>
+                    <td>Data</td>
+                    <td>Spec</td>
+                </tr>
+                <tr>
+                    <td>
+                        <pre>{{ DSPA.printObject(json0, 4) }}</pre>
+                    </td>
+                    <td>
+                        <pre>{{ DSPA.printObject(spec0, 4) }}</pre>
+                    </td>
+                </tr>
+            </table>
 
-        <h3>Test Results</h3>
-        <table border=1>
-            <tr>
-                <td>Test Description</td>
-                <td>Result</td>
-                <td>Expect</td>
-            </tr>
-            <tr>
-                <td>isString(json0)</td>
-                <td>{{ DSPA.isString(json0) }}</td>
-                <td>false</td>
-            </tr>
-            <tr>
-                <td>isObject(json0)</td>
-                <td>{{ DSPA.isObject(json0) }}</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>isInt( accessValue(json0, 'intKey0'))</td>
-                <td>{{ DSPA.isInt( DSPA.accessValue(json0, 'intKey0')) }}</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>isObject(accessValue(json0, 'objKey0'))</td>
-                <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey0')) }}</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>isObject(accessValue(json0, 'objKey1'))</td>
-                <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey1')) }}</td>
-                <td>false</td>
-            </tr>
-            <tr>
-                <td>DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
-                <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string") }}
-                </td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'),
-                    "string")
-                </td>
-                <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0, '__children__.strKey0.__membership__'),
-                    "string") }}
-                </td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>accessValue(json0, 'objKey0.strKey1')</td>
-                <td>{{ DSPA.accessValue(json0, 'objKey0.strKey1') }}</td>
-                <td>{{ json0.objKey0.strKey1 }}</td>
-            </tr>
-            <tr>
-                <td>isString(accessValue(json0, 'objKey0.strKey1'))</td>
-                <td>{{ DSPA.isString(DSPA.accessValue(json0, 'objKey0.strKey1')) }}</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>validateType(json0, spec0[SPEC_KEY.TYPE])</td>
-                <td>{{ DSPA.validateType(json0, spec0[DSPA.SPEC_KEY.TYPE]) }}</td>
-                <td>true</td>
-            </tr>
-            <tr>
-                <td>validateDataWithSpec(json0, spec0).result</td>
-                <td>{{ DSPA.validateDataWithSpec(json0, spec0).result }}</td>
-                <td>true</td>
-            </tr>
-        </table>
+            <h3>Test Results</h3>
+            <table border=1>
+                <tr>
+                    <td>Test Description</td>
+                    <td>Result</td>
+                    <td>Expect</td>
+                </tr>
+                <tr>
+                    <td>isString(json0)</td>
+                    <td>{{ DSPA.isString(json0) }}</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>isObject(json0)</td>
+                    <td>{{ DSPA.isObject(json0) }}</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>isInt( accessValue(json0, 'intKey0'))</td>
+                    <td>{{ DSPA.isInt( DSPA.accessValue(json0, 'intKey0')) }}</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>isObject(accessValue(json0, 'objKey0'))</td>
+                    <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey0')) }}</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>isObject(accessValue(json0, 'objKey1'))</td>
+                    <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey1')) }}</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
+                    <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")
+                        }}
+                    </td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0,
+                        '__children__.strKey0.__membership__'),
+                        "string")
+                    </td>
+                    <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0,
+                        '__children__.strKey0.__membership__'),
+                        "string") }}
+                    </td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>accessValue(json0, 'objKey0.strKey1')</td>
+                    <td>{{ DSPA.accessValue(json0, 'objKey0.strKey1') }}</td>
+                    <td>{{ json0.objKey0.strKey1 }}</td>
+                </tr>
+                <tr>
+                    <td>isString(accessValue(json0, 'objKey0.strKey1'))</td>
+                    <td>{{ DSPA.isString(DSPA.accessValue(json0, 'objKey0.strKey1')) }}</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>validateType(json0, spec0[SPEC_KEY.TYPE])</td>
+                    <td>{{ DSPA.validateType(json0, spec0[DSPA.SPEC_KEY.TYPE]) }}</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>validateDataWithSpec(json0, spec0).result</td>
+                    <td>{{ DSPA.validateDataWithSpec(json0, spec0).result }}</td>
+                    <td>true</td>
+                </tr>
+            </table>
 
-        <h3>Validation Result</h3>
-        <pre>{{ DSPA.printObject(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
+            <h3>Validation Result</h3>
+            <pre>{{ DSPA.printObject(DSPA.validateDataWithSpec(json0, spec0).toJSON(), 4) }}</pre>
+        </div>
+
+        <hr />
+
     </div>
-
-    <hr/>
-
-</div>
 </body>
+
 </html>
