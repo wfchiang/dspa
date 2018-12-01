@@ -49,6 +49,7 @@ var DSPA = new function () {
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
         'REQUIRED':'__required__', /* The default value is true */
+        'REGEX':'__regex__', 
         'PREDICATE':'__predicate__'
     };
 
@@ -116,6 +117,10 @@ var DSPA = new function () {
     this.isValueRange = function (r) {
         return (!this.isUndefined(r)) && (typeof r === 'object') && (r.constructor === ValueRange);
     };
+
+    this.isRegExp = function (re) {
+        return (!this.isUndefined(re)) & (typeof re === 'object') && (re.constructor === RegExp); 
+    }; 
 
     this.isValidationResult = function (r) {
         return (!this.isUndefined(r) && (typeof r === 'object') && (r.constructor === ValidationResult));
@@ -204,6 +209,36 @@ var DSPA = new function () {
 
         return valueRange;
     };
+
+    this.parseRegExp = function (s) {
+        if (this.isString(s)) {
+            s = s.trim(); 
+            let indexFirstSlash = s.indexOf("/"); 
+            let indexLastSlash = s.lastIndexOf("/"); 
+            if (indexFirstSlash == 0 && indexLastSlash > 0) {
+                let regexPattern = s.substring(indexFirstSlash+1, indexLastSlash); 
+                let regexFlag = ""; 
+                if (indexLastSlash + 1 < s.length) {
+                    regexFlag = s.substring(indexLastSlash + 1); 
+                }
+                if (regexFlag == "") {
+                    return new RegExp(regexPattern); 
+                }
+                else if (regexFlag == "g" || regexFlag == "i" || regexFlag == "m" || regexFlag == "u" || regexFlag == "y") {
+                    return new RegExp(regexPattern, regexFlag); 
+                }
+                else {
+                    throw new Error("Unknown regexFlag: " + regexFlag); 
+                }
+            }
+            else {
+                throw new Error("Invalid indices of slashes"); 
+            }
+        }
+        else {
+            throw new Error("Unsupported type for s"); 
+        }
+    }
 
     this.parsePredicate = function (s) {
         if (this.isString(s)) {
@@ -311,6 +346,16 @@ var DSPA = new function () {
         }
 
         return (valueRange.lowerBound < value && value < valueRange.upperBound);
+    };
+
+    this.validateRegexSearch = function (value, regex) {
+        if (!this.isString(value)) {
+            throw new Error("value is not a string"); 
+        }
+        if (!this.isRegExp(regex)) {
+            throw new Error("regex is not a RegExp"); 
+        }
+        return (value.search(regex) >= 0); 
     };
 
     this.addValidationFail = function(validationResult, reason) {
@@ -424,6 +469,18 @@ var DSPA = new function () {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.LENGTH]);
                 if (!this.validateValueRange(data.length, valueRange)) {
                     this.addValidationFail(validationResult, "string-length out of range");
+                }
+            }
+
+            // Check regex 
+            if (spec.hasOwnProperty(this.SPEC_KEY.REGEX)) {
+                try {
+                    let regex = this.parseRegExp(spec[this.SPEC_KEY.REGEX]);
+                    if (!this.validateRegexSearch(data, regex)) {
+                        this.addValidationFail(validationResult, "REGEX validation failed"); 
+                    }
+                } catch (ex) {
+                    this.addValidationFail(validationResult, "Unexpected fail when checking REGEX: " + String(ex));
                 }
             }
         }
