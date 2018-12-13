@@ -1,4 +1,4 @@
-<html>
+ <html>
 
 <head>
     <script src="../../tools/jscache/angular.min.js"></script>
@@ -116,46 +116,26 @@
                     <td>true</td>
                 </tr>
                 <tr>
-                    <td>isInt( accessValue(json0, 'intKey0'))</td>
-                    <td>{{ DSPA.isInt( DSPA.accessValue(json0, 'intKey0')) }}</td>
-                    <td>true</td>
-                </tr>
-                <tr>
-                    <td>isObject(accessValue(json0, 'objKey0'))</td>
-                    <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey0')) }}</td>
-                    <td>true</td>
-                </tr>
-                <tr>
-                    <td>isObject(accessValue(json0, 'objKey1'))</td>
-                    <td>{{ DSPA.isObject(DSPA.accessValue(json0, 'objKey1')) }}</td>
-                    <td>false</td>
-                </tr>
-                <tr>
-                    <td>DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")</td>
-                    <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, '__children__.strKey0.__membership__'), "string")
+                    <td>DSPA.isCollection(DSPA.accessValue(spec0, ['__children__','strKey0','__membership__']), "string")</td>
+                    <td>{{ DSPA.isCollection(DSPA.accessValue(spec0, ['__children__','strKey0','__membership__']), "string")
                         }}
                     </td>
                     <td>true</td>
                 </tr>
                 <tr>
                     <td>DSPA.validateMembership('strV0', DSPA.accessValue(spec0,
-                        '__children__.strKey0.__membership__'),
+                        ['__children__','strKey0','__membership__']),
                         "string")
                     </td>
                     <td>{{ DSPA.validateMembership('strV0', DSPA.accessValue(spec0,
-                        '__children__.strKey0.__membership__'),
+                        ['__children__','strKey0','__membership__']),
                         "string") }}
                     </td>
                     <td>true</td>
                 </tr>
                 <tr>
-                    <td>accessValue(json0, 'objKey0.strKey1')</td>
-                    <td>{{ DSPA.accessValue(json0, 'objKey0.strKey1') }}</td>
-                    <td>{{ json0.objKey0.strKey1 }}</td>
-                </tr>
-                <tr>
-                    <td>isString(accessValue(json0, 'objKey0.strKey1'))</td>
-                    <td>{{ DSPA.isString(DSPA.accessValue(json0, 'objKey0.strKey1')) }}</td>
+                    <td>isString(accessValue(json0, ['objKey0','strKey1']))</td>
+                    <td>{{ DSPA.isString(DSPA.accessValue(json0, ['objKey0','strKey1'])) }}</td>
                     <td>true</td>
                 </tr>
                 <tr>

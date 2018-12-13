@@ -2,6 +2,19 @@
 /**
 Classes
 */
+class ValidationEnvironment {
+    constructor() {
+        this.rootObject = undefined; 
+        this.objectKey = []; 
+    }
+    clone () {
+        let cloneVEnv = new ValidationEnvironment(); 
+        cloneVEnv.rootObject = this.rootObject; 
+        cloneVEnv.objectKey = this.objectKey.slice(0, this.objectKey.length); 
+        return cloneVEnv;
+    }
+}
+
 class ValidationResult {
     constructor() {
         this.result = true;
@@ -56,8 +69,6 @@ var DSPA = new function () {
     this.VAR_NAME = {
         'SELF':'self'
     };
-
-    this.PATH_SEPARATOR = '.';
 
     /**
     Type-check utils
@@ -124,6 +135,10 @@ var DSPA = new function () {
 
     this.isValidationResult = function (r) {
         return (!this.isUndefined(r) && (typeof r === 'object') && (r.constructor === ValidationResult));
+    };
+
+    this.isValidationEnvironment = function (r) {
+        return (!this.isUndefined(r) && (typeof r === 'object') && (r.constructor === ValidationEnvironment));
     };
 
     this.isCollection = function (c, type) {
@@ -257,33 +272,33 @@ var DSPA = new function () {
     /**
     IO utils
     */
-    this.accessValue = function (obj, vpath) {
+    this.accessValue = function (obj, valKey) {
         if (!this.isObject(obj)) {
             throw new Error("obj is not an object");
         }
-        if (!this.isString(vpath)) {
-            throw new Error("vpath is not a string");
+        
+        if (!this.isArray(valKey)) {
+            throw new Error("valKey is not an array");
         }
 
-        let currObj = obj;
-        let keys = vpath.split(this.PATH_SEPARATOR);
-        let i = 0;
-        for (i = 0 ; i < keys.length ; i++) {
-            if (this.isObject(currObj)) {
-                if (currObj.hasOwnProperty(keys[i])) {
-                    currObj = currObj[keys[i]];
-                }
-                else {
-                    return undefined;
-                }
+        if (valKey.length == 0) {
+            return obj; 
+        }
+        
+        let childkey = valKey[0]; 
+        if (obj.hasOwnProperty(childkey)) {
+            let childObj = obj[childkey]; 
+            if (valKey.length == 1) {
+                return childObj;
             }
             else {
-                return undefined;
+                return this.accessValue(childObj, valKey.slice(1, valKey.length));
             }
         }
-
-        return currObj;
-    };
+        else {
+            return undefined; 
+        }
+    }; 
 
     this.printObject = function (obj, lenIndent) {
         if (!this.isObject(obj)) {
@@ -358,7 +373,10 @@ var DSPA = new function () {
         return (value.search(regex) >= 0); 
     };
 
-    this.addValidationFail = function(validationResult, reason) {
+    this.addValidationFail = function(validationEnv, validationResult, reason) {
+        if (!this.isValidationEnvironment(validationEnv)) {
+            throw new Error("validationEnv is not a ValidationEnvironment"); 
+        }
         if (!this.isValidationResult(validationResult)) {
             throw new Error("validationResult is not a ValidationResult");
         }
@@ -366,13 +384,16 @@ var DSPA = new function () {
             throw new Error("reason is not a string");
         }
         validationResult.result = false;
-        validationResult.reasons.push(reason);
+        validationResult.reasons.push("[" + String(validationEnv.objectKey) + "] : " + reason);
     };
 
     /**
     Validation procedures
     */
-    this.validateDataWithSpec = function (data, spec) {
+    this.validateDataWithSpecUnderEnv = function (validationEnv, data, spec) {
+        if (!this.isValidationEnvironment(validationEnv)) {
+            throw new Error("validationEnv is not a ValidationEnvironment"); 
+        }
         if (!this.isSpec(spec)) {
             throw new Error("spec is not a Spec");
         }
@@ -385,11 +406,11 @@ var DSPA = new function () {
         if (spec.hasOwnProperty(this.SPEC_KEY.TYPE)) {
             dataType = spec[this.SPEC_KEY.TYPE];
             if (!this.validateType(data, dataType)) {
-                this.addValidationFail(validationResult, "The data is not type " + dataType);
+                this.addValidationFail(validationEnv, validationResult, "The data is not type " + dataType);
             }
         }
         else {
-            this.addValidationFail(validationResult, "No data type specified in the Spec");
+            this.addValidationFail(validationEnv, validationResult, "No data type specified in the Spec");
         }
         if (!validationResult.result) {
             return validationResult;
@@ -405,7 +426,7 @@ var DSPA = new function () {
                 let i = 0;
                 for (i = 0 ; i < dataChildrenKeys.length ; i++) {
                     if (!childrenSpecs.hasOwnProperty(dataChildrenKeys[i])) {
-                        this.addValidationFail(validationResult, "Unknown key " + dataChildrenKeys[i]);
+                        this.addValidationFail(validationEnv, validationResult, "Unknown key " + dataChildrenKeys[i]);
                     }
                 }
 
@@ -415,8 +436,11 @@ var DSPA = new function () {
                     let childKey = specChildrenKeys[i];
                     let childSpec = childrenSpecs[childKey];
 
+                    let childVEnv = validationEnv.clone();
+                    childVEnv.objectKey.push(childKey);
+
                     if (data.hasOwnProperty(childKey)) {
-                        let childValidationResult = this.validateDataWithSpec(data[childKey], childSpec);
+                        let childValidationResult = this.validateDataWithSpecUnderEnv(childVEnv, data[childKey], childSpec);
                         validationResult.result = (validationResult.result && childValidationResult.result);
                         validationResult.reasons = validationResult.reasons.concat(childValidationResult.reasons);
                     }
@@ -425,7 +449,7 @@ var DSPA = new function () {
                             ;
                         }
                         else { // If it is required -> return and error
-                            this.addValidationFail(validationResult, "Missed field " + childKey);
+                            this.addValidationFail(validationEnv, validationResult, "Missed field " + childKey);
                         }
                     }
                 }
@@ -439,7 +463,7 @@ var DSPA = new function () {
             if (spec.hasOwnProperty(this.SPEC_KEY.RANGE)) {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.RANGE]);
                 if (!this.validateValueRange(data, valueRange)) {
-                    this.addValidationFail(validationResult, " " + dataType + " out of range");
+                    this.addValidationFail(validationEnv, validationResult, " " + dataType + " out of range");
                 }
             }
         }
@@ -448,7 +472,7 @@ var DSPA = new function () {
             if (spec.hasOwnProperty(this.SPEC_KEY.LENGTH)) {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.LENGTH]);
                 if (!this.validateValueRange(data.length, valueRange)) {
-                    this.addValidationFail(validationResult, "array-length out of range");
+                    this.addValidationFail(validationEnv, validationResult, "array-length out of range");
                 }
             }
             
@@ -457,7 +481,11 @@ var DSPA = new function () {
                 let itemSpec = spec[this.SPEC_KEY.ITEM]; 
                 for (let i = 0 ; i < data.length ; i++) {
                     let item = data[i]; 
-                    let itemValidationResult = this.validateDataWithSpec(item, itemSpec); 
+
+                    let childVEnv = validationEnv.clone();
+                    childVEnv.objectKey.push(i); 
+
+                    let itemValidationResult = this.validateDataWithSpecUnderEnv(childVEnv, item, itemSpec); 
                     validationResult.result = (validationResult.result && itemValidationResult.result);
                     validationResult.reasons = validationResult.reasons.concat(itemValidationResult.reasons);
                 }
@@ -468,7 +496,7 @@ var DSPA = new function () {
             if (spec.hasOwnProperty(this.SPEC_KEY.LENGTH)) {
                 let valueRange = this.parseValueRange(spec[this.SPEC_KEY.LENGTH]);
                 if (!this.validateValueRange(data.length, valueRange)) {
-                    this.addValidationFail(validationResult, "string-length out of range");
+                    this.addValidationFail(validationEnv, validationResult, "string-length out of range");
                 }
             }
 
@@ -477,10 +505,10 @@ var DSPA = new function () {
                 try {
                     let regex = this.parseRegExp(spec[this.SPEC_KEY.REGEX]);
                     if (!this.validateRegexSearch(data, regex)) {
-                        this.addValidationFail(validationResult, "REGEX validation failed"); 
+                        this.addValidationFail(validationEnv, validationResult, "REGEX validation failed"); 
                     }
                 } catch (ex) {
-                    this.addValidationFail(validationResult, "Unexpected fail when checking REGEX: " + String(ex));
+                    this.addValidationFail(validationEnv, validationResult, "Unexpected fail when checking REGEX: " + String(ex));
                 }
             }
         }
@@ -499,7 +527,7 @@ var DSPA = new function () {
             }
             try {
                 if (!predicate(data)) {
-                    this.addValidationFail(validationResult, "predicate returns false: " + predicateCode); 
+                    this.addValidationFail(validationEnv, validationResult, "predicate returns false: " + predicateCode); 
                 }
             } catch (ex) {
                 throw new Error("Predicate execution failed: " + predicateCode); 
@@ -510,4 +538,7 @@ var DSPA = new function () {
         return validationResult;
     };
 
+    this.validateDataWithSpec = function (data, spec) {
+        return this.validateDataWithSpecUnderEnv(new ValidationEnvironment(), data, spec); 
+    }
 };
