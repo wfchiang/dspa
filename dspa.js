@@ -76,6 +76,10 @@ var DSPA = new function () {
         return (typeof x === 'undefined');
     };
 
+    this.isBoolean = function (b) {
+        return (!this.isUndefined(b)) && ((typeof b === 'boolean') || (b instanceof Boolean));
+    };
+
     this.isInt = function (n) {
         return (!this.isUndefined(n)) && (Number(n) === n && n % 1 === 0);
     };
@@ -85,7 +89,7 @@ var DSPA = new function () {
     };
 
     this.isString = function (s) {
-        return (!this.isUndefined(s)) && (typeof s === 'string') || (s instanceof String);
+        return (!this.isUndefined(s)) && ((typeof s === 'string') || (s instanceof String)); 
     };
 
     this.isArray = function (a) {
@@ -163,6 +167,21 @@ var DSPA = new function () {
     /**
     Parsing utils
     */
+    this.parseBoolean = function (b) {
+        if (this.isBoolean(b)) {
+            return b; 
+        }
+        if (this.isString(b)) {
+            if (String(b).toLowerCase() == 'true') {
+                return true; 
+            }
+            if (String(b).toLowerCase() == 'false') {
+                return false; 
+            }
+        }
+        throw new Error('Failed to parse Boolean')
+    };
+
     this.parseValueRange = function (s) {
         let valueRange = new ValueRange();
 
@@ -252,7 +271,22 @@ var DSPA = new function () {
         else {
             throw new Error("Unsupported type for s"); 
         }
-    }
+    };
+
+    this.parseRequiredExpr = function (refObj, exprRequired) {
+        try {
+            let isRequired = this.parseBoolean(exprRequired); 
+            return isRequired; 
+        } catch (ex) {
+            ;
+        }
+
+        if (!this.isObject()) {
+            throw new Error("refObj is not an object"); 
+        }
+
+        throw new Error("Invalid required expression"); 
+    }; 
 
     /**
     IO utils
@@ -293,6 +327,23 @@ var DSPA = new function () {
             throw new Error("lenIndent is not an integer");
         }
         return JSON.stringify(obj, undefined, lenIndent);
+    };
+
+    /** 
+    Predicates 
+     */
+    this.hasRequired = function (obj, valKey) {
+        if (!this.isObject(obj)) {
+            throw new Error("obj is not an object");
+        }
+        
+        if (!this.isArray(valKey)) {
+            throw new Error("valKey is not an array");
+        }    
+
+        let val = this.accessValue(obj, valKey); 
+
+        return this.isUndefined(val); 
     };
 
     /**
@@ -356,7 +407,7 @@ var DSPA = new function () {
             throw new Error("regex is not a RegExp"); 
         }
         return (value.search(regex) >= 0); 
-    };
+    }; 
 
     this.addValidationFail = function(validationEnv, validationResult, reason) {
         if (!this.isValidationEnvironment(validationEnv)) {
@@ -430,10 +481,12 @@ var DSPA = new function () {
                         validationResult.reasons = validationResult.reasons.concat(childValidationResult.reasons);
                     }
                     else { // The field is not populated
-                        if (childSpec.hasOwnProperty(this.SPEC_KEY.REQUIRED) && (!childSpec[this.SPEC_KEY.REQUIRED])) { // If it is not required -> that's ok
-                            ;
+                        let exprRequired = true; 
+                        if (childSpec.hasOwnProperty(this.SPEC_KEY.REQUIRED)) {
+                            exprRequired = childSpec[this.SPEC_KEY.REQUIRED]; 
                         }
-                        else { // If it is required -> return and error
+                        let isRequired = this.parseRequiredExpr(validationEnv.rootObject, exprRequired); 
+                        if (isRequired) {
                             this.addValidationFail(validationEnv, validationResult, "Missed field " + childKey);
                         }
                     }
@@ -506,6 +559,9 @@ var DSPA = new function () {
     };
 
     this.validateDataWithSpec = function (data, spec) {
-        return this.validateDataWithSpecUnderEnv(new ValidationEnvironment(), data, spec); 
+        let validationEnv = new ValidationEnvironment(); 
+        validationEnv.rootObject = data; 
+        validationEnv.objectKey = []; 
+        return this.validateDataWithSpecUnderEnv(validationEnv, data, spec); 
     }
 };
