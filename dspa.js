@@ -62,8 +62,7 @@ var DSPA = new function () {
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
         'REQUIRED':'__required__', /* The default value is true */
-        'REGEX':'__regex__', 
-        'PREDICATE':'__predicate__'
+        'REGEX':'__regex__'
     };
 
     this.VAR_NAME = {
@@ -254,20 +253,6 @@ var DSPA = new function () {
             throw new Error("Unsupported type for s"); 
         }
     }
-
-    this.parsePredicate = function (s) {
-        if (this.isString(s)) {
-            if (this.isSafePredicateCode(s)) {
-                return new Function(this.VAR_NAME.SELF, s);
-            }
-            else {
-                throw new Error("Unsafe predicate code");
-            }
-        }
-        else {
-            throw new Error("Unsupported type of s");
-        }
-    };
 
     /**
     IO utils
@@ -516,24 +501,6 @@ var DSPA = new function () {
             throw new Error("Uncaught dataType: " + dataType);
         }
         
-        // Check predicate 
-        if (spec.hasOwnProperty(this.SPEC_KEY.PREDICATE)) {
-            predicateCode = spec[this.SPEC_KEY.PREDICATE]; 
-            let predicate; 
-            try {
-                predicate = this.parsePredicate(predicateCode); 
-            } catch (ex) {
-                throw new Error("Cannot parse predicate: " + predicateCode); 
-            }
-            try {
-                if (!predicate(data)) {
-                    this.addValidationFail(validationEnv, validationResult, "predicate returns false: " + predicateCode); 
-                }
-            } catch (ex) {
-                throw new Error("Predicate execution failed: " + predicateCode); 
-            }
-        }
-
         // Return
         return validationResult;
     };

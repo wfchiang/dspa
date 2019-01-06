@@ -23,7 +23,6 @@
                 };
                 $scope.spec0 = {
                     "__type__": "object",
-                    "__predicate__": "return (2.1 <= (self.intKey0 + self.floatKey0));",
                     "__children__": {
                         "arrKey0": {
                             "__type__": "array",
@@ -45,8 +44,7 @@
                         "floatKey0": {
                             "__required__": false,
                             "__type__": "float",
-                            "__range__": "[1.0, 2.0)",
-                            "__predicate__": "return(1.1 <= self);"
+                            "__range__": "[1.0, 2.0)"
                         },
                         "objKey0": {
                             "__required__": false,
@@ -64,16 +62,6 @@
 
             // Utils
             $scope.DSPA = DSPA;
-
-            // Tests
-            $scope.goTest = function () {
-                $scope.predicateTest($scope.testText);
-            };
-
-            $scope.predicateTest = function (predString) {
-                let pred = new Function("rootObj", "return String(rootObj.strKey0);");
-                alert(pred($scope.json0));
-            };
         });
 
 
