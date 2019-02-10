@@ -47,6 +47,7 @@ var DSPA = new function () {
     Constants
     */
     this.DATA_TYPE = {
+        'BOOLEAN':'boolean',
         'INT':'int',
         'FLOAT':'float',
         'STRING':'string',
@@ -359,6 +360,9 @@ var DSPA = new function () {
             throw new Error("type is not a string");
         }
 
+        if (type === this.DATA_TYPE.BOOLEAN) {
+            return this.isBoolean(value); 
+        }
         if (type === this.DATA_TYPE.STRING) {
             return this.isString(value);
         }
@@ -458,7 +462,10 @@ var DSPA = new function () {
         }
 
         // Different validation processes based on the data type
-        if (dataType === this.DATA_TYPE.OBJECT) {
+        if (dataType === this.DATA_TYPE.BOOLEAN) {
+            // Nothing to do with boolean ... 
+        }
+        else if (dataType === this.DATA_TYPE.OBJECT) {
             // Check the children
             if (spec.hasOwnProperty(this.SPEC_KEY.CHILDREN)) {
                 // Check the unknown children in the data
