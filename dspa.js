@@ -58,6 +58,7 @@ var DSPA = new function () {
         'TYPE': '__type__',
         'CHILDREN':'__children__',
         'ITEM':'__item__',
+        'ITEMS':'__items__',
         'LENGTH':'__length__',
         'RANGE':'__range__',
         'MEMBERSHIP':'__membership__',
@@ -281,8 +282,12 @@ var DSPA = new function () {
             ;
         }
 
-        if (!this.isObject()) {
+        if (!this.isObject(refObj)) {
             throw new Error("refObj is not an object"); 
+        }
+
+        if (!this.isArray(exprRequired)) {
+            throw new Error("exprRequired is not an array"); 
         }
 
         throw new Error("Invalid required expression"); 
@@ -514,7 +519,7 @@ var DSPA = new function () {
                 }
             }
             
-            // Check items 
+            // Check __item__ 
             if (spec.hasOwnProperty(this.SPEC_KEY.ITEM)) {
                 let itemSpec = spec[this.SPEC_KEY.ITEM]; 
                 for (let i = 0 ; i < data.length ; i++) {
@@ -526,6 +531,28 @@ var DSPA = new function () {
                     let itemValidationResult = this.validateDataWithSpecUnderEnv(childVEnv, item, itemSpec); 
                     validationResult.result = (validationResult.result && itemValidationResult.result);
                     validationResult.reasons = validationResult.reasons.concat(itemValidationResult.reasons);
+                }
+            }
+
+            // Check __items__
+            if (spec.hasOwnProperty(this.SPEC_KEY.ITEMS)) {
+                let itemSpecs = spec[this.SPEC_KEY.ITEMS]; 
+                
+                if (itemSpecs.length == data.length) {
+                    for (let i = 0 ; i < data.length ; i++) {
+                        let dataItem = data[i]; 
+                        let specItem = spec[this.SPEC_KEY.ITEMS][i]; 
+
+                        let childVEnv = validationEnv.clone(); 
+                        childVEnv.objectKey.push(i); 
+
+                        let itemValidationResult = this.validateDataWithSpecUnderEnv(childVEnv, dataItem, specItem); 
+                        validationResult.result = (validationResult.result && itemValidationResult.result); 
+                        validationResult.reasons = validationResult.reasons.concat(itemValidationResult.reasons); 
+                    }
+                }
+                else {
+                    this.addValidationFail(validationEnv, validationResult, "The # of array item in spec does not match with the data array"); 
                 }
             }
         }

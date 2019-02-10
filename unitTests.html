@@ -14,6 +14,7 @@
             this.$onInit = function () {
                 $scope.json0 = {
                     "arrKey0": [123, 134, 145],
+                    "arrKey1": [123, 456, 789], 
                     "strKey0": "strV0",
                     "intKey0": 1,
                     "floatKey0": 1.1,
@@ -31,6 +32,27 @@
                                 "__range__": "[100, 150]"
                             }
                         },
+                        "arrKey1": {
+                            "__type__": "array", 
+                            "__length__": 3, 
+                            "__item__": {
+                                "__type__": "int", 
+                            }, 
+                            "__items__": [
+                                {
+                                    "__type__": "int", 
+                                    "__range__": "[0, 333)"
+                                }, 
+                                {
+                                    "__type__": "int", 
+                                    "__range__": "[333, 667)"
+                                },
+                                {
+                                    "__type__": "int",
+                                    "__range__": "[667, 1000)"
+                                }
+                            ] 
+                        }, 
                         "strKey0": {
                             "__type__": "string",
                             "__length__": "(0, 100]",
@@ -57,7 +79,7 @@
                             }
                         },
                         "objKey1": {
-                            "__required__": "true", 
+                            "__required__": "false", 
                             "__type__": "object"
                         }
                     }
