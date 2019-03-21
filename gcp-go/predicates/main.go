@@ -14,6 +14,11 @@ func main () {
 }
 
 func indexHandler (resp_writer http.ResponseWriter, req *http.Request) {
+	if (req.Method != "POST") {
+		resp_writer.WriteHeader(http.StatusMethodNotAllowed)
+		return 
+	}
+
 	if (req.URL.Path == CONTEXT_ROOT+"/is-valid-date") {
 		fmt.Fprintln(resp_writer, "/is-valid-date called")
 	} else {
