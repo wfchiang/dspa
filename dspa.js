@@ -597,5 +597,75 @@ var DSPA = new function () {
         validationEnv.rootObject = data; 
         validationEnv.objectKey = []; 
         return this.validateDataWithSpecUnderEnv(validationEnv, data, spec); 
-    }
+    };
+};
+
+
+var BOOLEVAL = new function () {
+    this.SPEC_KEY = {
+        'OPT': '__opt__', 
+        'PARAMS': '__params__'
+    };
+
+    this.OPT_KEY = {
+        'AND': 'and', 
+        'OR': 'or'
+    };
+
+    this.SPEC_BOOL_CLAUSE = {
+        "__type__": "object", 
+        "__children__": {
+            "__opt__": {
+                "__required__": true, 
+                "__type__": DSPA.DATA_TYPE.STRING,
+                "__membership__": Object.values(this.OPT_KEY)
+            },
+            "__params__": {
+                "__required__": true, 
+                "__type__": DSPA.DATA_TYPE.ARRAY
+            }
+        }
+    }; 
+
+    // clause -> boolean 
+    this.eval = function (clause) {
+        // return the boolean 
+        if (DSPA.isBoolean(clause)) {
+            return clause; 
+        }
+
+        // value "clause" must be a clause type 
+        if (! DSPA.validateDataWithSpec(clause, this.SPEC_BOOL_CLAUSE)) {
+            throw new Error('The given data is not a boolean nor a clause type.');
+        }
+
+        let clause_opt = clause[this.SPEC_KEY.OPT]; 
+        let clause_params = clause[this.SPEC_KEY.PARAMS];
+
+        if (clause_opt === this.OPT_KEY.AND) {
+            let i = 0; 
+            let eval_result = true; 
+            for (i = 0 ; i < clause_params.length ; i++) {
+                eval_result = (eval_result && this.eval(clause_params[i])); 
+                if (eval_result == false) {
+                    break; 
+                }
+            }
+            return eval_result; 
+        }
+        else if (clause_opt === this.OPT_KEY.OR) {
+            let i = 0; 
+            let eval_result = false;
+            for (i = 0 ; i < clause_params.length ; i++) {
+                eval_result = (eval_result || this.eval(clause_params[i])); 
+                if (eval_result == true) {
+                    break; 
+                }
+            }
+            return eval_result;   
+        }
+        else {
+            throw new Error('Unknown boolean operator: ' + clause_opt); 
+        }
+    };
 };
